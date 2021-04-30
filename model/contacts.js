@@ -1,35 +1,92 @@
-// const fs = require('fs/promises')
-// const contacts = require('./contacts.json')
-const db = require('./db')
-const { v4: uuidv4 } = require('uuid')
+const Contacts = require('./schemas/contactSchema')
+/* const db = require('./db')
+const {ObjectId}=require('mongodb')
+
+const getCollection = async (db, name) => {
+  const client = await db
+  const collection = await client.db().collection(name)
+  return collection
+} */
 
 const listContacts = async () => {
-  return db.get('contacts').value()
+  const results = await Contacts.find()
+  return results
 }
+
+/* const listContacts = async () => {
+  const collection = await getCollection(db, 'contacts')
+  const results = await collection.find().toArray()
+  return results
+} */
 
 const getContactById = async (contactId) => {
-  return db.get('contacts').find({ id: contactId }).value()
+  const result = await Contacts.findOne({ _id: contactId })
+  return result
 }
+
+/* const getContactById = async (contactId) => {
+  const collection = await getCollection(db, 'contacts')
+  const objectId = new ObjectId(contactId)
+  console.log(objectId.getTimestamp())
+  const [result] = await collection.find({ _id: objectId }).toArray()
+  return result
+} */
 
 const removeContact = async (contactId) => {
-  const [record] = db.get('contacts').remove({ id: contactId }).write()
-  return record
+  const result = await Contacts.findByIdAndRemove({_id: contactId})
+  return result
 }
+
+/* const removeContact = async (contactId) => {
+  const collection = await getCollection(db, 'contacts')
+  const objectId = new ObjectId(contactId)
+  const { value: result } = await collection.findOneAndDelete({_id: objectId})
+  return result
+} */
 
 const addContact = async (body) => {
-  const id = uuidv4()
-  const record = {
-    id,
-    ...body
-  }
-  db.get('contacts').push(record).write()
-  return record
+  const result = await Contacts.create(body)
+  return result
 }
 
+/* const addContact = async (body) => {
+  const record = {
+   // id,
+    ...body
+  }
+  const collection = await getCollection(db, 'contacts')
+  const { ops: [result],
+  } = await collection.insertOne(record)
+  return result
+} */
+
 const updateContact = async (contactId, body) => {
-  const record = await db.get('contacts').find({ id: contactId }).assign(body).value()
-  db.write()
-  return record.id ? record : null
+  const result = await Contacts.findByIdAndUpdate(
+    { _id: contactId },
+    { ...body },
+    {new: true},
+  )
+  return result
+}
+
+/* const updateContact = async (contactId, body) => {
+  const collection = await getCollection(db, 'contacts')
+  const objectId = new ObjectId(contactId)
+  const { value: result } = await collection.findOneAndUpdate(
+    { _id: objectId },
+    { $set: body },
+    {returnOriginal: false},
+  )
+  return result
+} */
+
+const updateStatusContact = async (contactId, body) => {
+  const result = await Contacts.findByIdAndUpdate(
+    { _id: contactId },
+    { ...body },
+    {new: true},
+  )
+  return result
 }
 
 module.exports = {
@@ -37,5 +94,6 @@ module.exports = {
   getContactById,
   removeContact,
   addContact,
-  updateContact
+  updateContact,
+  updateStatusContact
 }
