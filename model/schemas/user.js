@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
-const { Schema, model } = mongoose;
+const { Schema, model } = mongoose
+const gravatar =require('gravatar')
 const {Subscription} = require('../../helper/constants')
 const bcrypt = require('bcrypt')
 
@@ -14,14 +15,10 @@ const userSchema = new Schema({
         type: String,
         required: [true, 'Email is required'],
         unique: true,
-        /*validate(value) {
-            const re = /\S+@\S+\.S+/
-            return re.test(String(value).toLowerCase())
-        },*/
+      
     },
     subscription: {
         type: String,
-       // enum: ["starter", "pro", "business"],
         enum: {
             values: [Subscription.STARTER, Subscription.PRO, Subscription.BUSINESS],
         },
@@ -31,6 +28,12 @@ const userSchema = new Schema({
         type: String,
         default: null,
     },
+    avatar: {
+        type: String,
+        default: function () {
+           return gravatar.url(this.email, {s: '250'}, true) 
+        }
+    }
 },
     {
         versionKey: false,
